@@ -57,11 +57,18 @@ var level1 = [
 
 
 var playGame = function() {
-  var board = new GameBoard();
-  board.add(new TapperGameplay);
+ /* var board = new GameBoard();
   board.add(new Level(level1,winGame));
   Game.setBoard(3,board);
   Game.setBoard(5,new GamePoints(0));
+  */
+  var board = new GameBoard();
+  board.add(new Stage());
+
+  var waiter = new GameBoard();
+  waiter.add(new Player());
+  Game.setBoard(0, board);
+  Game.setBoard(1, waiter);
 };
 
 var winGame = function() {
@@ -76,6 +83,7 @@ var loseGame = function() {
                                   playGame));
 };
 
+/*
 var Starfield = function(speed,opacity,numStars,clear) {
 
   // Set up the offscreen canvas
@@ -136,6 +144,7 @@ var Starfield = function(speed,opacity,numStars,clear) {
     offset = offset % stars.height;
   };
 };
+
 
 var PlayerShip = function() { 
   this.setup('ship', { vx: 0, reloadTime: 0.25, maxVel: 200 });
@@ -257,6 +266,7 @@ Enemy.prototype.hit = function(damage) {
   }
 };
 
+
 var EnemyMissile = function(x,y) {
   this.setup('enemy_missile',{ vy: 200, damage: 10 });
   this.x = x - this.w/2;
@@ -278,7 +288,6 @@ EnemyMissile.prototype.step = function(dt)  {
 };
 
 
-
 var Explosion = function(centerX,centerY) {
   this.setup('explosion', { frame: 0 });
   this.x = centerX - this.w/2;
@@ -291,6 +300,50 @@ Explosion.prototype.step = function(dt) {
   this.frame++;
   if(this.frame >= 12) {
     this.board.remove(this);
+  }
+};
+*/
+
+//Class Stage
+var Stage = function(){
+  this.setup('TapperGameplay', {x:0, y:0});
+};
+
+Stage.prototype = new Sprite();
+
+Stage.prototype.step = function(dt) {};
+
+//Class PLayer
+var Player = function(){
+  this.setup('Player', {x:421, y:377, reloadTime:0.12});
+  this.reload = this.reloadTime;
+};
+
+Player.prototype = new Sprite();
+
+Player.prototype.step = function(dt){
+  this.reload -= dt;
+  if(Game.keys['up'] && this.reload < 0){
+    if(this.y === 90)
+      {this.x = 421, this.y = 377}
+    else if(this.y === 185)
+      {this.x = 325, this.y = 90}
+    else if(this.y === 281)
+      {this.x = 357, this.y = 185}
+    else if(this.y === 377)
+      {this.x = 389, this.y = 281}
+    this.reload = this.reloadTime;
+  }
+  else if(Game.keys['down'] && this.reload < 0){
+    if(this.y === 90)
+      {this.x = 357, this.y = 185}
+    else if(this.y === 185)
+      {this.x = 389, this.y = 281}
+    else if(this.y === 281)
+      {this.x = 421, this.y = 377}
+    else if(this.y === 377)
+      {this.x = 325, this.y = 90}
+    this.reload = this.reloadTime;
   }
 };
 

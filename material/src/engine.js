@@ -54,7 +54,7 @@ var Game = new function() {
   
 
   // Handle Input
-  var KEY_CODES = { 37:'left', 39:'right', 32 :'fire' };
+  var KEY_CODES = { 38:'up', 40:'down', 32:'space'/*37:'left', 39:'right', 32 :'fire'*/ };
   this.keys = {};
 
   this.setupInput = function() {
