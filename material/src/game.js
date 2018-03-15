@@ -20,6 +20,16 @@ var enemies = {
               B: 150, C: 1.2, E: 75 }
 };
 
+function storeCoordinate(xVal, yVal, array) {
+    array.push({x: xVal, y: yVal});
+}
+
+var coords = [];
+storeCoordinate(325, 90, coords);
+storeCoordinate(357, 185, coords);
+storeCoordinate(389, 281, coords);
+storeCoordinate(421, 377, coords);
+
 var OBJECT_PLAYER = 1,
     OBJECT_PLAYER_PROJECTILE = 2,
     OBJECT_ENEMY = 4,
@@ -67,6 +77,9 @@ var playGame = function() {
 
   var waiter = new GameBoard();
   waiter.add(new Player());
+  waiter.add(new Beer());
+  waiter.add(new Client());
+
   Game.setBoard(0, board);
   Game.setBoard(1, waiter);
 };
@@ -315,37 +328,76 @@ Stage.prototype.step = function(dt) {};
 
 //Class PLayer
 var Player = function(){
-  this.setup('Player', {x:421, y:377, reloadTime:0.12});
-  this.reload = this.reloadTime;
+  this.setup('Player', {x:421, y:377, reloadTime:0.16});
+  this.move = this.reloadTime;
+  this.beer = this.reloadTime;
+  this.i = 3;
 };
 
 Player.prototype = new Sprite();
 
 Player.prototype.step = function(dt){
-  this.reload -= dt;
-  if(Game.keys['up'] && this.reload < 0){
-    if(this.y === 90)
-      {this.x = 421, this.y = 377}
-    else if(this.y === 185)
-      {this.x = 325, this.y = 90}
-    else if(this.y === 281)
-      {this.x = 357, this.y = 185}
-    else if(this.y === 377)
-      {this.x = 389, this.y = 281}
-    this.reload = this.reloadTime;
+  this.move -= dt;
+  if(Game.keys['up'] && this.move < 0){
+     if(this.i > 0){
+      this.x = coords[this.i-1].x;
+      this.y = coords[this.i-1].y;
+      this.i--;
+    }
+    else{
+      this.x = coords[3].x;
+      this.y = coords[3].y;
+      this.i = 3;
+    }
+    this.move = this.reloadTime;
   }
-  else if(Game.keys['down'] && this.reload < 0){
-    if(this.y === 90)
-      {this.x = 357, this.y = 185}
-    else if(this.y === 185)
-      {this.x = 389, this.y = 281}
-    else if(this.y === 281)
-      {this.x = 421, this.y = 377}
-    else if(this.y === 377)
-      {this.x = 325, this.y = 90}
-    this.reload = this.reloadTime;
+
+  if(Game.keys['down'] && this.move < 0){  
+    if(this.i < 3){
+      this.x = coords[this.i+1].x;
+      this.y = coords[this.i+1].y;
+      this.i++;
+    }
+    else{
+      this.x = coords[0].x;
+      this.y = coords[0].y;
+      this.i = 0;
+    }
+    this.move = this.reloadTime;
+  }
+
+  this.beer -= dt;
+  if(Game.keys['space'] && this.beer < 0){
+    Game.keys['space'] = false;
+    this.beer = this.reloadTime;
+    this.board.add(new Beer(this.x,this.y));
+    this.board.add(new Client(0, this.y));
   }
 };
+
+var Beer = function(x, y){
+  this.setup('Beer',{vx: -120});
+  this.x = x - this.w;
+  this.y = y; 
+}
+
+Beer.prototype = new Sprite();
+
+Beer.prototype.step = function(dt){
+  this.x += this.vx * dt;
+}
+
+var Client = function(x, y){
+  this.setup('NPC',{vx: -120});
+  this.x = x;
+  this.y = y;
+}
+
+Client.prototype = new Sprite();
+
+Client.prototype.step = function(dt){
+  this.x -= this.vx * dt;
+}
 
 window.addEventListener("load", function() {
   Game.initialize("game",sprites,playGame);

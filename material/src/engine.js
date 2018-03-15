@@ -71,6 +71,14 @@ var Game = new function() {
        e.preventDefault();
       }
     },false);
+
+    window.addEventListener('keyspace',function(e) {
+      if(KEY_CODES[e.keyCode]) {
+       Game.keys[KEY_CODES[e.keyCode]] = false; 
+       e.preventDefault();
+      }
+    },false);
+
   };
 
 
