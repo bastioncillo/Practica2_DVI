@@ -7,7 +7,7 @@ var sprites = {
   TapperGameplay: {sx: 0,sy: 480,w: 512,h: 480,frames: 1}
 };
 
-var enemies = {
+/*var enemies = {
   straight: { x: 0,   y: -50, sprite: 'enemy_ship', health: 10, 
               E: 100 },
   ltr:      { x: 0,   y: -100, sprite: 'enemy_purple', health: 10, 
@@ -18,7 +18,7 @@ var enemies = {
               B: 50, C: 4, E: 100, firePercentage: 0.001, missiles: 2 },
   step:     { x: 0,   y: -50, sprite: 'enemy_circle', health: 10,
               B: 150, C: 1.2, E: 75 }
-};
+};*/
 
 function storeCoordinate(xVal, yVal, array) {
     array.push({x: xVal, y: yVal});
@@ -108,7 +108,7 @@ var Starfield = function(speed,opacity,numStars,clear) {
   // If the clear option is set, 
   // make the background black instead of transparent
   if(clear) {
-    starCtx.fillStyle = "#000";
+    starCtx.f illStyle = "#000";
     starCtx.fillRect(0,0,stars.width,stars.height);
   }
   // Now draw a bunch of random 2 pixel
@@ -335,6 +335,7 @@ Player.prototype.step = function(dt){
   }
 };
 
+//Class Beer
 var Beer = function(x, y){
   this.setup('Beer',{vx: -120});
   this.x = x - this.w;
@@ -357,6 +358,7 @@ Beer.prototype.step = function(dt){
   }*/
 }
 
+//Class Client
 var Client = function(x, y){
   this.setup('NPC',{vx: -120});
   this.x = x;
@@ -370,6 +372,13 @@ Client.prototype.step = function(dt){
   this.x -= this.vx * dt;
 }
 
+Client.prototype.hit = function(damage) {
+ if(this.board.remove(this)) {
+      this.board.add(new Glass(this.x, this.y));
+  }
+};
+
+//Class Glass
 var Glass = function(x, y){
   this.setup('Glass', {vx: -120});
   this.x = x;
@@ -384,6 +393,21 @@ Glass.prototype.step = function(dt){
   var collision = this.board.collide(this, OBJECT_PLAYER);
   if(collision){
     this.board.remove(this);
+  }
+}
+
+//Class DeadZone
+var DeadZone = function(){
+
+}
+
+DeadZone.prototype = new Sprite();
+
+DeadZone.prototype.draw = function(){
+  var canvas = document.getElementById('canvas');
+  if (canvas.getContext) {
+    var ctx = canvas.getContext('2d');
+    ctx.fillRect(25, 25, 100, 100);
   }
 }
 
