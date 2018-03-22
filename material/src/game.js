@@ -20,23 +20,6 @@ var sprites = {
               B: 150, C: 1.2, E: 75 }
 };*/
 
-function storeDZCoordinate(xVal, yVal, array){
-	array.push({x: xVal, y: yVal});
-}
-
-var deadZoneCoords = [];
-//derecha
-storeDZCoordinate(325, 90, deadZoneCoords);
-storeDZCoordinate(357, 185, deadZoneCoords);
-storeDZCoordinate(389, 281, deadZoneCoords);
-storeDZCoordinate(421, 377, deadZoneCoords);
-//izquierda
-storeDZCoordinate(122, 90, deadZoneCoords);
-storeDZCoordinate(90, 185, deadZoneCoords);
-storeDZCoordinate(58, 281, deadZoneCoords);
-storeDZCoordinate(26, 377, deadZoneCoords);
-
-
 function storeCoordinate(xVal, yVal, array) {
     array.push({x: xVal, y: yVal});
 }
@@ -47,11 +30,24 @@ storeCoordinate(357, 185, playerCoords);
 storeCoordinate(389, 281, playerCoords);
 storeCoordinate(421, 377, playerCoords);
 
+var deadZoneCoords = [];
+//Right
+storeCoordinate(325, 90, deadZoneCoords);
+storeCoordinate(357, 185, deadZoneCoords);
+storeCoordinate(389, 281, deadZoneCoords);
+storeCoordinate(421, 377, deadZoneCoords);
+//Left
+storeCoordinate(122, 90, deadZoneCoords);
+storeCoordinate(90, 185, deadZoneCoords);
+storeCoordinate(58, 281, deadZoneCoords);
+storeCoordinate(26, 377, deadZoneCoords);
+
+
 var OBJECT_PLAYER = 1,
     OBJECT_PLAYER_PROJECTILE = 2,
     OBJECT_ENEMY = 4,
     OBJECT_ENEMY_PROJECTILE = 8,
-    OBJECT_POWERUP = 16;
+    OBJECT_DEADZONE = 16;
 
 var startGame = function() {
   var ua = navigator.userAgent.toLowerCase();
@@ -91,13 +87,16 @@ var playGame = function() {
   */
   var board = new GameBoard();
   board.add(new Stage());
+  
 
   var waiter = new GameBoard();
   waiter.add(new Player());
   waiter.add(new Beer());
   waiter.add(new Client());
   waiter.add(new Glass());
-  waiter.add(new DeadZone());
+  for(var i = 0; i < deadZoneCoords.length; i++){
+    waiter.add(new DeadZone(deadZoneCoords[i].x, deadZoneCoords[i].y, 20, 66, i));
+  }
 
   Game.setBoard(0, board);
   Game.setBoard(1, waiter);
@@ -320,13 +319,13 @@ Player.prototype.step = function(dt){
   this.move -= dt;
   if(Game.keys['up'] && this.move < 0){
      if(this.i > 0){
-      this.x = coords[this.i-1].x;
-      this.y = coords[this.i-1].y;
+      this.x = playerCoords[this.i-1].x;
+      this.y = playerCoords[this.i-1].y;
       this.i--;
     }
     else{
-      this.x = coords[3].x;
-      this.y = coords[3].y;
+      this.x = playerCoords[3].x;
+      this.y = playerCoords[3].y;
       this.i = 3;
     }
     this.move = this.reloadTime;
@@ -334,13 +333,13 @@ Player.prototype.step = function(dt){
 
   if(Game.keys['down'] && this.move < 0){  
     if(this.i < 3){
-      this.x = coords[this.i+1].x;
-      this.y = coords[this.i+1].y;
+      this.x = playerCoords[this.i+1].x;
+      this.y = playerCoords[this.i+1].y;
       this.i++;
     }
     else{
-      this.x = coords[0].x;
-      this.y = coords[0].y;
+      this.x = playerCoords[0].x;
+      this.y = playerCoords[0].y;
       this.i = 0;
     }
     this.move = this.reloadTime;
@@ -359,8 +358,7 @@ Player.prototype.step = function(dt){
 var Beer = function(x, y){
   this.setup('Beer',{vx: -120});
   this.x = x - this.w;
-  this.y = y; 
-  this.full = true;
+  this.y = y;
 }
 
 Beer.prototype = new Sprite();
@@ -372,10 +370,13 @@ Beer.prototype.step = function(dt){
   if(collision) {
     collision.hit(this.damage);
     this.board.remove(this);
-    this.full = false;
-  } /*else if(this.y < -this.h) { 
+  }/*else if(this.y < -this.h) { 
       this.board.remove(this); 
   }*/
+}
+
+Beer.prototype.hit = function(damage){
+  this.board.remove(this);
 }
 
 //Class Client
@@ -416,19 +417,36 @@ Glass.prototype.step = function(dt){
   }
 }
 
-//Class DeadZone
-var DeadZone = function(){
-	drawRectangle();
+Glass.prototype.hit = function(damage){
+  this.board.remove(this);
 }
 
-var drawRectangle = function(){
-  var canvas = document.getElementById("canvas");
-  if (canvas.getContext) {
-    var ctx = canvas.getContext("2d");
-	  i = 0;
-	  for(i; i < deadZoneCoords.size(); i++){
-		  ctx.fillRect(deadZoneCoords[i].x, deadZoneCoords[i].y, 25, 100);
-	  }
+//Class DeadZone
+var DeadZone = function(x, y, w, h, i){
+	this.x = x;
+  this.y = y;
+  this.w = w;
+  this.h = h;
+  this.i = i;
+}
+
+DeadZone.prototype.type = OBJECT_DEADZONE;
+
+DeadZone.prototype.step = function(dt){
+  var collision1 = this.board.collide(this, OBJECT_ENEMY);
+  var collision2 = this.board.collide(this, OBJECT_PLAYER_PROJECTILE);
+  if //par
+    if //impar
+  if(collision){
+    //Notificar que se ha perdido
+    collision.hit(this.damage);
+  }
+}
+
+DeadZone.prototype.draw = function(ctx){
+  i = 0;
+  for(i; i < deadZoneCoords.length; i++){
+	 ctx.fillRect(this.x, this.y, this.w, this.h);
   }
 }
 
