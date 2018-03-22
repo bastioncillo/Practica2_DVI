@@ -20,15 +20,32 @@ var sprites = {
               B: 150, C: 1.2, E: 75 }
 };*/
 
+function storeDZCoordinate(xVal, yVal, array){
+	array.push({x: xVal, y: yVal});
+}
+
+var deadZoneCoords = [];
+//derecha
+storeDZCoordinate(325, 90, deadZoneCoords);
+storeDZCoordinate(357, 185, deadZoneCoords);
+storeDZCoordinate(389, 281, deadZoneCoords);
+storeDZCoordinate(421, 377, deadZoneCoords);
+//izquierda
+storeDZCoordinate(122, 90, deadZoneCoords);
+storeDZCoordinate(90, 185, deadZoneCoords);
+storeDZCoordinate(58, 281, deadZoneCoords);
+storeDZCoordinate(26, 377, deadZoneCoords);
+
+
 function storeCoordinate(xVal, yVal, array) {
     array.push({x: xVal, y: yVal});
 }
 
-var coords = [];
-storeCoordinate(325, 90, coords);
-storeCoordinate(357, 185, coords);
-storeCoordinate(389, 281, coords);
-storeCoordinate(421, 377, coords);
+var playerCoords = [];
+storeCoordinate(325, 90, playerCoords);
+storeCoordinate(357, 185, playerCoords);
+storeCoordinate(389, 281, playerCoords);
+storeCoordinate(421, 377, playerCoords);
 
 var OBJECT_PLAYER = 1,
     OBJECT_PLAYER_PROJECTILE = 2,
@@ -80,9 +97,12 @@ var playGame = function() {
   waiter.add(new Beer());
   waiter.add(new Client());
   waiter.add(new Glass());
+  waiter.add(new DeadZone());
 
   Game.setBoard(0, board);
   Game.setBoard(1, waiter);
+  
+  
 };
 
 var winGame = function() {
@@ -398,16 +418,17 @@ Glass.prototype.step = function(dt){
 
 //Class DeadZone
 var DeadZone = function(){
-
+	drawRectangle();
 }
 
-DeadZone.prototype = new Sprite();
-
-DeadZone.prototype.draw = function(){
-  var canvas = document.getElementById('canvas');
+var drawRectangle = function(){
+  var canvas = document.getElementById("canvas");
   if (canvas.getContext) {
-    var ctx = canvas.getContext('2d');
-    ctx.fillRect(25, 25, 100, 100);
+    var ctx = canvas.getContext("2d");
+	  i = 0;
+	  for(i; i < deadZoneCoords.size(); i++){
+		  ctx.fillRect(deadZoneCoords[i].x, deadZoneCoords[i].y, 25, 100);
+	  }
   }
 }
 
