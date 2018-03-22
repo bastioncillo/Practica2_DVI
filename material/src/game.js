@@ -32,15 +32,15 @@ storeCoordinate(421, 377, playerCoords);
 
 var deadZoneCoords = [];
 //Right
-storeCoordinate(325, 90, deadZoneCoords);
-storeCoordinate(357, 185, deadZoneCoords);
-storeCoordinate(389, 281, deadZoneCoords);
-storeCoordinate(421, 377, deadZoneCoords);
+storeCoordinate(332, 90, deadZoneCoords);
+storeCoordinate(364, 185, deadZoneCoords);
+storeCoordinate(396, 281, deadZoneCoords);
+storeCoordinate(428, 377, deadZoneCoords);
 //Left
-storeCoordinate(122, 90, deadZoneCoords);
-storeCoordinate(90, 185, deadZoneCoords);
-storeCoordinate(58, 281, deadZoneCoords);
-storeCoordinate(26, 377, deadZoneCoords);
+storeCoordinate(102, 90, deadZoneCoords);
+storeCoordinate(70, 185, deadZoneCoords);
+storeCoordinate(38, 281, deadZoneCoords);
+storeCoordinate(6, 377, deadZoneCoords);
 
 
 var OBJECT_PLAYER = 1,
@@ -95,7 +95,7 @@ var playGame = function() {
   waiter.add(new Client());
   waiter.add(new Glass());
   for(var i = 0; i < deadZoneCoords.length; i++){
-    waiter.add(new DeadZone(deadZoneCoords[i].x, deadZoneCoords[i].y, 20, 66, i));
+    waiter.add(new DeadZone(deadZoneCoords[i].x, deadZoneCoords[i].y, 10, 66 , i));
   }
 
   Game.setBoard(0, board);
@@ -350,7 +350,7 @@ Player.prototype.step = function(dt){
     Game.keys['space'] = false;
     this.beer = this.reloadTime;
     this.board.add(new Beer(this.x,this.y));
-    this.board.add(new Client(0, this.y));
+    this.board.add(new Client(this.x-400, this.y));
   }
 };
 
@@ -433,14 +433,11 @@ var DeadZone = function(x, y, w, h, i){
 DeadZone.prototype.type = OBJECT_DEADZONE;
 
 DeadZone.prototype.step = function(dt){
-  var collision1 = this.board.collide(this, OBJECT_ENEMY);
-  var collision2 = this.board.collide(this, OBJECT_PLAYER_PROJECTILE);
-  if //par
-    if //impar
-  if(collision){
-    //Notificar que se ha perdido
-    collision.hit(this.damage);
-  }
+	var collision = this.board.collide(this, OBJECT_ENEMY | OBJECT_PLAYER_PROJECTILE);
+	if(collision){
+		//Notificar que se ha perdido
+		collision.hit(this.damage);
+	}
 }
 
 DeadZone.prototype.draw = function(ctx){
