@@ -375,6 +375,7 @@ Beer.prototype.step = function(dt){
     this.board.remove(this);
     this.board.add(new Glass(this.x, this.y));
     GameManager.checkGlass(1);
+	GameManager.decrementClients();
   }
 }
 
@@ -398,7 +399,6 @@ Client.prototype.step = function(dt){
 
 Client.prototype.hit = function(damage) {
  this.board.remove(this);
- GameManager.checkClients(-1);
 };
 
 //Class Glass
@@ -416,6 +416,8 @@ Glass.prototype.step = function(dt){
   var collision = this.board.collide(this, OBJECT_PLAYER);
   if(collision){
     this.board.remove(this);
+	console.log("Esto no debería estar pasando... :(")
+	GameManager.decrementGlass();
   }
 }
 
@@ -498,12 +500,20 @@ var GameManager = new function(){
 
   this.checkClients = function(n){
     this.totalClients += n;
-    this.checkGame();
+  }
+  
+  this.decrementClients = function(){
+	  this.totalClients--;
+	  this.checkGame();
   }
 
   this.checkGlass = function(n){
     this.totalGlass += n;
-    this.checkGame();
+  }
+  
+  this.decrementGlass = function(){
+	  this.totalGlass--;
+	  this.checkGame();
   }
 
   this.checkLose = function(){
@@ -512,9 +522,11 @@ var GameManager = new function(){
   }
 
   this.checkGame= function(){
-    if(this.defeat === true)
+    if(this.defeat === true){
       console.log("DEFEAT");
-    else if(this.totalGlass === 0 && this.totalClients === 0)
+	  console.log(this.totalClients);
+	  console.log(this.totalGlass);
+    }else if(this.totalGlass === 0 && this.totalClients === 0)
       console.log("VICTORY");
   }
 }
