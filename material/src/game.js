@@ -55,21 +55,25 @@ var OBJECT_PLAYER = 1,
     OBJECT_ENEMY_PROJECTILE = 8,
     OBJECT_DEADZONE = 16;
 
-/*var startGame = function() {
-  var ua = navigator.userAgent.toLowerCase();
+var startGame = function() {
+  var ua = navigator.userAgent.toUpperCase();
 
-  // Only 1 row of stars
+ /* // Only 1 row of stars
   if(ua.match(/android/)) {
     Game.setBoard(0,new Starfield(50,0.6,100,true));
   } else {
     Game.setBoard(0,new Starfield(20,0.4,100,true));
     Game.setBoard(1,new Starfield(50,0.6,100));
     Game.setBoard(2,new Starfield(100,1.0,50));
-  }  
-  Game.setBoard(3,new TitleScreen("Alien Invasion", 
-                                  "Press fire to start playing",
+  }*/
+
+  var board = new GameBoard();
+  board.add(new Stage());
+  Game.setBoard(0, board);
+  Game.setBoard(1,new TitleScreen("tapper", 
+                                  "press enter to start playing",
                                   playGame));
-};*/
+};
 
 /*var level1 = [
  // Start,   End, Gap,  Type,   Override
@@ -84,14 +88,10 @@ var OBJECT_PLAYER = 1,
 ];*/
 
 var playGame = function() {
-  var board = new GameBoard();
-  board.add(new Stage());
-  
+
   var waiter = new GameBoard();
   waiter.add(new Player());
-  waiter.add(new Beer());
-  waiter.add(new Client());
-  waiter.add(new Glass());
+
   for(var i = 0; i < deadZoneCoords.length; i++){
     waiter.add(new DeadZone(deadZoneCoords[i].x, deadZoneCoords[i].y, 10, 66 , i));
   }
@@ -103,20 +103,19 @@ var playGame = function() {
   var leftPanel = new GameBoard();
   leftPanel.add(new LeftPanel());
 
-  Game.setBoard(0, board);
-  Game.setBoard(1, waiter);  
-  Game.setBoard(2, leftPanel);
-};
-
-var winGame = function() {
-  Game.setBoard(3,new TitleScreen("You win!", 
-                                  "Press space to play again",
-                                  playGame));
+  Game.setBoard(2, waiter);  
+  Game.setBoard(3, leftPanel);
 };
 
 var loseGame = function() {
-  Game.setBoard(3,new TitleScreen("You lose!", 
-                                  "Press space to play again",
+  Game.setBoard(1,new TitleScreen("You lose!", 
+                                  "Press enter to play again",
+                                  playGame));
+};
+
+var winGame = function() {
+  Game.setBoard(1,new TitleScreen("You win!", 
+                                  "Press enter to play again",
                                   playGame));
 };
 
@@ -194,7 +193,7 @@ var PlayerShip = function() {
       this.board.add(new PlayerMissile(this.x,this.y+this.h/2));
       this.board.add(new PlayerMissile(this.x+this.w,this.y+this.h/2));
     }
-  };
+  }; 
 };
 PlayerShip.prototype = new Sprite();
 PlayerShip.prototype.type = OBJECT_PLAYER;
@@ -375,7 +374,7 @@ Beer.prototype.step = function(dt){
     this.board.remove(this);
     this.board.add(new Glass(this.x, this.y));
     GameManager.checkGlass(1);
-	GameManager.decrementClients();
+	  GameManager.decrementClients();
   }
 }
 
@@ -416,8 +415,7 @@ Glass.prototype.step = function(dt){
   var collision = this.board.collide(this, OBJECT_PLAYER);
   if(collision){
     this.board.remove(this);
-	console.log("Esto no debería estar pasando... :(")
-	GameManager.decrementGlass();
+	  GameManager.decrementGlass();
   }
 }
 
@@ -458,7 +456,7 @@ var Spawner = function(pos, nClients, freq){
   this.freq = freq;
   this.initFreq = this.freq;
   this.client = new Client(pos.x, pos.y);
-  GameManager.checkClients(nClients);
+  GameManager.checkClients(this.nClients);
 }
 
 Spawner.prototype.reset = function(){
@@ -524,13 +522,16 @@ var GameManager = new function(){
   this.checkGame= function(){
     if(this.defeat === true){
       console.log("DEFEAT");
-	  console.log(this.totalClients);
-	  console.log(this.totalGlass);
-    }else if(this.totalGlass === 0 && this.totalClients === 0)
+      loseGame();
+    }else if(this.totalGlass === 0 && this.totalClients === 0){
       console.log("VICTORY");
+      winGame();
+    }
+    console.log(this.totalClients);
+    console.log(this.totalGlass);
   }
 }
 
 window.addEventListener("load", function() {
-  Game.initialize("game",sprites,playGame);
+  Game.initialize("game",sprites,startGame);
 });

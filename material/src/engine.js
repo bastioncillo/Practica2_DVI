@@ -54,7 +54,7 @@ var Game = new function() {
   
 
   // Handle Input
-  var KEY_CODES = { 38:'up', 40:'down', 32:'space'/*37:'left', 39:'right', 32 :'fire'*/ };
+  var KEY_CODES = { 38:'up', 40:'down', 32:'space', 13:'enter'/*37:'left', 39:'right', 32 :'fire'*/ };
   this.keys = {};
 
   this.setupInput = function() {
@@ -173,16 +173,16 @@ var SpriteSheet = new function() {
 var TitleScreen = function TitleScreen(title,subtitle,callback) {
   var up = false;
   this.step = function(dt) {
-    if(!Game.keys['fire']) up = true;
-    if(up && Game.keys['fire'] && callback) callback();
+    if(!Game.keys['enter']) up = true;
+    if(up && Game.keys['enter'] && callback) callback();
   };
 
   this.draw = function(ctx) {
 
-    // Background
+/*    // Background
     ctx.fillStyle = "#000000";
     ctx.fillRect(0, 0, Game.width, Game.height);
-
+*/
     // Foreground
     ctx.fillStyle = "#FFFFFF";
 
