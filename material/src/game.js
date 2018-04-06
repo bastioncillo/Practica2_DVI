@@ -7,19 +7,6 @@ var sprites = {
   TapperGameplay: {sx: 0,sy: 480,w: 512,h: 480,frames: 1}
 };
 
-/*var enemies = {
-  straight: { x: 0,   y: -50, sprite: 'enemy_ship', health: 10, 
-              E: 100 },
-  ltr:      { x: 0,   y: -100, sprite: 'enemy_purple', health: 10, 
-              B: 75, C: 1, E: 100, missiles: 2  },
-  circle:   { x: 250,   y: -50, sprite: 'enemy_circle', health: 10, 
-              A: 0,  B: -100, C: 1, E: 20, F: 100, G: 1, H: Math.PI/2 },
-  wiggle:   { x: 100, y: -50, sprite: 'enemy_bee', health: 20, 
-              B: 50, C: 4, E: 100, firePercentage: 0.001, missiles: 2 },
-  step:     { x: 0,   y: -50, sprite: 'enemy_circle', health: 10,
-              B: 150, C: 1.2, E: 75 }
-};*/
-
 function storeCoordinate(xVal, yVal, array) {
     array.push({x: xVal, y: yVal});
 }
@@ -55,40 +42,32 @@ var OBJECT_PLAYER = 1,
     OBJECT_ENEMY_PROJECTILE = 8,
     OBJECT_DEADZONE = 16;
 
+var gameEnd = false;
+
 var startGame = function() {
   var ua = navigator.userAgent.toUpperCase();
 
- /* // Only 1 row of stars
-  if(ua.match(/android/)) {
-    Game.setBoard(0,new Starfield(50,0.6,100,true));
-  } else {
-    Game.setBoard(0,new Starfield(20,0.4,100,true));
-    Game.setBoard(1,new Starfield(50,0.6,100));
-    Game.setBoard(2,new Starfield(100,1.0,50));
-  }*/
+  //Title cap
+  var title = new GameBoard();
+  title.add(new TitleScreen("Tapper", "Press enter to star playing", playGame));
+  Game.setBoard(0, title);
 
-  var board = new GameBoard();
-  board.add(new Stage());
-  Game.setBoard(0, board);
-  Game.setBoard(1,new TitleScreen("tapper", 
-                                  "press enter to start playing",
-                                  playGame));
-};
+  //Victory cap
+  var victory = new GameBoard();
+  victory.add(new TitleScreen("Victory", "Press enter to star playing", startGame));
+  Game.setBoard(1, victory);
 
-/*var level1 = [
- // Start,   End, Gap,  Type,   Override
-  [ 0,      4000,  500, 'step' ],
-  [ 6000,   13000, 800, 'ltr' ],
-  [ 10000,  16000, 400, 'circle' ],
-  [ 17800,  20000, 500, 'straight', { x: 50 } ],
-  [ 18200,  20000, 500, 'straight', { x: 90 } ],
-  [ 18200,  20000, 500, 'straight', { x: 10 } ],
-  [ 22000,  25000, 400, 'wiggle', { x: 150 }],
-  [ 22000,  25000, 400, 'wiggle', { x: 100 }]
-];*/
+  //Defeat cap
+  var defeat = new GameBoard();
+  defeat.add(new TitleScreen("Defeat", "Press enter to star playing", startGame));
+  Game.setBoard(2, defeat);
 
-var playGame = function() {
+  //Stage cap
+  var stage = new GameBoard();
+  stage.add(new Stage());
+  Game.setBoard(3, stage);
 
+  //Player, DeadZone and NPC'S cap
   var waiter = new GameBoard();
   waiter.add(new Player());
 
@@ -100,203 +79,56 @@ var playGame = function() {
   waiter.add(new Spawner(clientCoords[2], 2, 3));
   waiter.add(new Spawner(clientCoords[3], 2, 5));
 
+  Game.setBoard(4, waiter);  
+
+  //Left panel cap
   var leftPanel = new GameBoard();
   leftPanel.add(new LeftPanel());
+  Game.setBoard(5, leftPanel);
 
-  Game.setBoard(2, waiter);  
-  Game.setBoard(3, leftPanel);
+  if (!gameEnd)
+    Game.activateBoard(0);
+  else
+    playGame();
+
 };
 
-var loseGame = function() {
-  Game.setBoard(1,new TitleScreen("You lose!", 
-                                  "Press enter to play again",
-                                  playGame));
+var playGame = function() {
+  GameManager.reset();
+
+  //Deactivate notify panels
+  Game.deactivateBoard(0);
+  Game.deactivateBoard(1);
+  Game.deactivateBoard(2);
+  //Activate the game
+  Game.activateBoard(3);
+  Game.activateBoard(4);
+  Game.activateBoard(5);
 };
 
 var winGame = function() {
-  Game.setBoard(1,new TitleScreen("You win!", 
-                                  "Press enter to play again",
-                                  playGame));
+  //Deactivate the game
+  Game.deactivateBoard(3);
+  Game.deactivateBoard(4);
+  Game.deactivateBoard(5);
+
+  //Activate victory panel
+  Game.activateBoard(1);
+
+  gameEnd = true;
 };
 
-/*
-var Starfield = function(speed,opacity,numStars,clear) {
-  // Set up the offscreen canvas
-  var stars = document.createElement("canvas");
-  stars.width = Game.width; 
-  stars.height = Game.height;
-  var starCtx = stars.getContext("2d");
-  var offset = 0;
-  // If the clear option is set, 
-  // make the background black instead of transparent
-  if(clear) {
-    starCtx.f illStyle = "#000";
-    starCtx.fillRect(0,0,stars.width,stars.height);
-  }
-  // Now draw a bunch of random 2 pixel
-  // rectangles onto the offscreen canvas
-  starCtx.fillStyle = "#FFF";
-  starCtx.globalAlpha = opacity;
-  for(var i=0;i<numStars;i++) {
-    starCtx.fillRect(Math.floor(Math.random()*stars.width),
-                     Math.floor(Math.random()*stars.height),
-                     2,
-                     2);
-  }
-  // This method is called every frame
-  // to draw the starfield onto the canvas
-  this.draw = function(ctx) {
-    var intOffset = Math.floor(offset);
-    var remaining = stars.height - intOffset;
-    // Draw the top half of the starfield
-    if(intOffset > 0) {
-      ctx.drawImage(stars,
-                0, remaining,
-                stars.width, intOffset,
-                0, 0,
-                stars.width, intOffset);
-    }
-    // Draw the bottom half of the starfield
-    if(remaining > 0) {
-      ctx.drawImage(stars,
-              0, 0,
-              stars.width, remaining,
-              0, intOffset,
-              stars.width, remaining);
-    }
-  };
-  // This method is called to update
-  // the starfield
-  this.step = function(dt) {
-    offset += dt * speed;
-    offset = offset % stars.height;
-  };
+var loseGame = function() {
+  //Deactivate the game
+  Game.deactivateBoard(3);
+  Game.deactivateBoard(4);
+  Game.deactivateBoard(5);
+
+  //Activate defeat panel
+  Game.activateBoard(2);
+
+  gameEnd = true;
 };
-var PlayerShip = function() { 
-  this.setup('ship', { vx: 0, reloadTime: 0.25, maxVel: 200 });
-  this.reload = this.reloadTime;
-  this.x = Game.width/2 - this.w / 2;
-  this.y = Game.height - Game.playerOffset - this.h;
-  this.step = function(dt) {
-    if(Game.keys['left']) { this.vx = -this.maxVel; }
-    else if(Game.keys['right']) { this.vx = this.maxVel; }
-    else { this.vx = 0; }
-    this.x += this.vx * dt;
-    if(this.x < 0) { this.x = 0; }
-    else if(this.x > Game.width - this.w) { 
-      this.x = Game.width - this.w;
-    }
-    this.reload-=dt;
-    if(Game.keys['fire'] && this.reload < 0) {
-      Game.keys['fire'] = false;
-      this.reload = this.reloadTime;
-      this.board.add(new PlayerMissile(this.x,this.y+this.h/2));
-      this.board.add(new PlayerMissile(this.x+this.w,this.y+this.h/2));
-    }
-  }; 
-};
-PlayerShip.prototype = new Sprite();
-PlayerShip.prototype.type = OBJECT_PLAYER;
-PlayerShip.prototype.hit = function(damage) {
-  if(this.board.remove(this)) {
-    loseGame();
-  }
-};
-var PlayerMissile = function(x,y) {
-  this.setup('missile',{ vy: -700, damage: 10 });
-  this.x = x - this.w/2;
-  this.y = y - this.h; 
-};
-PlayerMissile.prototype = new Sprite();
-PlayerMissile.prototype.type = OBJECT_PLAYER_PROJECTILE;
-PlayerMissile.prototype.step = function(dt)  {
-  this.y += this.vy * dt;
-  var collision = this.board.collide(this,OBJECT_ENEMY);
-  if(collision) {
-    collision.hit(this.damage);
-    this.board.remove(this);
-  } else if(this.y < -this.h) { 
-      this.board.remove(this); 
-  }
-};
-var Enemy = function(blueprint,override) {
-  this.merge(this.baseParameters);
-  this.setup(blueprint.sprite,blueprint);
-  this.merge(override);
-};
-Enemy.prototype = new Sprite();
-Enemy.prototype.type = OBJECT_ENEMY;
-Enemy.prototype.baseParameters = { A: 0, B: 0, C: 0, D: 0, 
-                                   E: 0, F: 0, G: 0, H: 0,
-                                   t: 0, reloadTime: 0.75, 
-                                   reload: 0 };
-Enemy.prototype.step = function(dt) {
-  this.t += dt;
-  this.vx = this.A + this.B * Math.sin(this.C * this.t + this.D);
-  this.vy = this.E + this.F * Math.sin(this.G * this.t + this.H);
-  this.x += this.vx * dt;
-  this.y += this.vy * dt;
-  var collision = this.board.collide(this,OBJECT_PLAYER);
-  if(collision) {
-    collision.hit(this.damage);
-    this.board.remove(this);
-  }
-  if(Math.random() < 0.01 && this.reload <= 0) {
-    this.reload = this.reloadTime;
-    if(this.missiles == 2) {
-      this.board.add(new EnemyMissile(this.x+this.w-2,this.y+this.h));
-      this.board.add(new EnemyMissile(this.x+2,this.y+this.h));
-    } else {
-      this.board.add(new EnemyMissile(this.x+this.w/2,this.y+this.h));
-    }
-  }
-  this.reload-=dt;
-  if(this.y > Game.height ||
-     this.x < -this.w ||
-     this.x > Game.width) {
-       this.board.remove(this);
-  }
-};
-Enemy.prototype.hit = function(damage) {
-  this.health -= damage;
-  if(this.health <=0) {
-    if(this.board.remove(this)) {
-      Game.points += this.points || 100;
-      this.board.add(new Explosion(this.x + this.w/2, 
-                                   this.y + this.h/2));
-    }
-  }
-};
-var EnemyMissile = function(x,y) {
-  this.setup('enemy_missile',{ vy: 200, damage: 10 });
-  this.x = x - this.w/2;
-  this.y = y;
-};
-EnemyMissile.prototype = new Sprite();
-EnemyMissile.prototype.type = OBJECT_ENEMY_PROJECTILE;
-EnemyMissile.prototype.step = function(dt)  {
-  this.y += this.vy * dt;
-  var collision = this.board.collide(this,OBJECT_PLAYER)
-  if(collision) {
-    collision.hit(this.damage);
-    this.board.remove(this);
-  } else if(this.y > Game.height) {
-      this.board.remove(this); 
-  }
-};
-var Explosion = function(centerX,centerY) {
-  this.setup('explosion', { frame: 0 });
-  this.x = centerX - this.w/2;
-  this.y = centerY - this.h/2;
-};
-Explosion.prototype = new Sprite();
-Explosion.prototype.step = function(dt) {
-  this.frame++;
-  if(this.frame >= 12) {
-    this.board.remove(this);
-  }
-};
-*/
 
 //Class Stage
 var Stage = function(){
@@ -374,7 +206,7 @@ Beer.prototype.step = function(dt){
     this.board.remove(this);
     this.board.add(new Glass(this.x, this.y));
     GameManager.checkGlass(1);
-	  GameManager.decrementClients();
+    GameManager.checkClients(-1);
   }
 }
 
@@ -415,7 +247,7 @@ Glass.prototype.step = function(dt){
   var collision = this.board.collide(this, OBJECT_PLAYER);
   if(collision){
     this.board.remove(this);
-	  GameManager.decrementGlass();
+    GameManager.checkGlass(-1);
   }
 }
 
@@ -456,7 +288,7 @@ var Spawner = function(pos, nClients, freq){
   this.freq = freq;
   this.initFreq = this.freq;
   this.client = new Client(pos.x, pos.y);
-  GameManager.checkClients(this.nClients);
+  GameManager.checkClients(nClients);
 }
 
 Spawner.prototype.reset = function(){
@@ -498,20 +330,12 @@ var GameManager = new function(){
 
   this.checkClients = function(n){
     this.totalClients += n;
-  }
-  
-  this.decrementClients = function(){
-	  this.totalClients--;
-	  this.checkGame();
+    this.checkGame();
   }
 
   this.checkGlass = function(n){
     this.totalGlass += n;
-  }
-  
-  this.decrementGlass = function(){
-	  this.totalGlass--;
-	  this.checkGame();
+    this.checkGame();
   }
 
   this.checkLose = function(){
@@ -521,14 +345,13 @@ var GameManager = new function(){
 
   this.checkGame= function(){
     if(this.defeat === true){
-      console.log("DEFEAT");
       loseGame();
-    }else if(this.totalGlass === 0 && this.totalClients === 0){
-      console.log("VICTORY");
-      winGame();
+      console.log("DEFEAT");
     }
-    console.log(this.totalClients);
-    console.log(this.totalGlass);
+    else if(this.totalGlass === 0 && this.totalClients === 0){
+      winGame();
+      console.log("VICTORY");
+    }
   }
 }
 
