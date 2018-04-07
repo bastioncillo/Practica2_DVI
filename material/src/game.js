@@ -61,12 +61,12 @@ var startGame = function() {
 
   //Victory cap
   var victory = new GameBoard();
-  victory.add(new TitleScreen("Victory", "Press enter to star playing", playGame));
+  victory.add(new TitleScreen("Victory", "Press enter to star playing", startGame));
   Game.setBoard(2, victory);
 
   //Defeat cap
   var defeat = new GameBoard();
-  defeat.add(new TitleScreen("Defeat", "Press enter to star playing", playGame));
+  defeat.add(new TitleScreen("Defeat", "Press enter to star playing", startGame));
   Game.setBoard(3, defeat);
 
   //Player, DeadZone and NPC'S cap
@@ -79,7 +79,7 @@ var startGame = function() {
   waiter.add(new Spawner(clientCoords[0], 1, 1));
   waiter.add(new Spawner(clientCoords[1], 1, 3));
   waiter.add(new Spawner(clientCoords[2], 2, 3));
-  waiter.add(new Spawner(clientCoords[3], 2, 5));
+  waiter.add(new Spawner(clientCoords[3], 2, 6));
 
   Game.setBoard(4, waiter);
 
@@ -88,15 +88,15 @@ var startGame = function() {
   leftPanel.add(new LeftPanel());
   Game.setBoard(5, leftPanel);
 
- // if (!gameEnd)
-   // Game.activateBoard(0);
- // else
-  //  playGame();
+ if (!gameEnd)
+   Game.activateBoard(1);
+ else
+  playGame();
 
 };
 
 var playGame = function() {
-  GameManager.reset();
+ // GameManager.reset();
 
   //Deactivate notify panels
   Game.deactivateBoard(1);
@@ -114,7 +114,7 @@ var winGame = function() {
 
   //Activate victory panel
   Game.activateBoard(2);
-
+  GameManager.reset();
   gameEnd = true;
 };
 
@@ -125,7 +125,7 @@ var loseGame = function() {
 
   //Activate defeat panel
   Game.activateBoard(3);
-
+  GameManager.reset();
   gameEnd = true;
 };
 
@@ -189,7 +189,7 @@ Player.prototype.step = function(dt){
 
 //Class Beer
 var Beer = function(x, y){
-  this.setup('Beer',{vx: -100});
+  this.setup('Beer',{vx: -50});
   this.x = x - this.w;
   this.y = y;
 }
@@ -215,7 +215,7 @@ Beer.prototype.hit = function(damage){
 
 //Class Client
 var Client = function(x, y){
-  this.setup('NPC',{vx: -20});
+  this.setup('NPC',{vx: -50});
   this.x = x;
   this.y = y;
 }
@@ -274,10 +274,11 @@ DeadZone.prototype.step = function(dt){
 }
 
 DeadZone.prototype.draw = function(ctx){
-  i = 0;
+  //Uncomment for debug
+/*  i = 0;
   for(i; i < deadZoneCoords.length; i++){
    ctx.fillRect(this.x, this.y, this.w, this.h);
-  }
+  }*/ 
 }
 
 //Class Spawner
@@ -292,7 +293,7 @@ var Spawner = function(pos, nClients, freq){
 
 Spawner.prototype.reset = function(){
   this.freq = this.initFreq;
-  this.nClients = this.initClients;
+  this.nC = this.initClients;
 }
 
 Spawner.prototype.step = function(dt){
@@ -345,13 +346,10 @@ var GameManager = new function(){
   this.checkGame= function(){
     if(this.defeat === true){
       loseGame();
-      console.log("DEFEAT");
     }
     else if(this.totalGlass === 0 && this.totalClients === 0){
       winGame();
-      console.log("VICTORY");
     }
-    console.log(this.totalClients);
   }
 }
 
