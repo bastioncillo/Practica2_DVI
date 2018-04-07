@@ -175,14 +175,18 @@ var TitleScreen = function TitleScreen(title,subtitle,callback) {
   var up = false;
   this.step = function(dt) {
     if(!Game.keys['enter']) up = true;
-    if(up && Game.keys['enter'] && callback) callback();
+    if(up && Game.keys['enter'] && callback){
+      up = false;
+      Game.keys['space'] = false;
+      callback();
+	}
   };
 
   this.draw = function(ctx) {
 
     // Background
-    ctx.fillStyle = "#000000";
-    ctx.fillRect(0, 0, Game.width, Game.height);
+    //ctx.fillStyle = "#000000";
+    //ctx.fillRect(0, 0, Game.width, Game.height);
 
     // Foreground
     ctx.fillStyle = "#FFFFFF";
@@ -241,6 +245,7 @@ var GameBoard = function() {
 
   // Call the same method on all current objects 
   this.iterate = function(funcName) {
+  	if(!this.active)return;
      var args = Array.prototype.slice.call(arguments,1);
      for(var i=0,len=this.objects.length;i<len;i++) {
        var obj = this.objects[i];
@@ -288,11 +293,11 @@ var GameBoard = function() {
   };
 
   this.activate = function(){
-    this.activate = true;
+    this.active = true;
   };
 
   this.deactivate = function(){
-    this.activate = false;
+    this.active = false;
   };
 };
 

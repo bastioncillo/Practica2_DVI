@@ -47,25 +47,27 @@ var gameEnd = false;
 var startGame = function() {
   var ua = navigator.userAgent.toUpperCase();
 
+ //Stage cap
+  var stage = new GameBoard();
+  stage.add(new Stage());
+  Game.setBoard(0, stage);
+  Game.activateBoard(0);
+
   //Title cap
   var title = new GameBoard();
   title.add(new TitleScreen("Tapper", "Press enter to star playing", playGame));
-  Game.setBoard(0, title);
+  Game.setBoard(1, title);
+  Game.activateBoard(1);
 
   //Victory cap
   var victory = new GameBoard();
-  victory.add(new TitleScreen("Victory", "Press enter to star playing", startGame));
-  Game.setBoard(1, victory);
+  victory.add(new TitleScreen("Victory", "Press enter to star playing", playGame));
+  Game.setBoard(2, victory);
 
   //Defeat cap
   var defeat = new GameBoard();
-  defeat.add(new TitleScreen("Defeat", "Press enter to star playing", startGame));
-  Game.setBoard(2, defeat);
-
-  //Stage cap
-  var stage = new GameBoard();
-  stage.add(new Stage());
-  Game.setBoard(3, stage);
+  defeat.add(new TitleScreen("Defeat", "Press enter to star playing", playGame));
+  Game.setBoard(3, defeat);
 
   //Player, DeadZone and NPC'S cap
   var waiter = new GameBoard();
@@ -79,17 +81,17 @@ var startGame = function() {
   waiter.add(new Spawner(clientCoords[2], 2, 3));
   waiter.add(new Spawner(clientCoords[3], 2, 5));
 
-  Game.setBoard(4, waiter);  
+  Game.setBoard(4, waiter);
 
   //Left panel cap
   var leftPanel = new GameBoard();
   leftPanel.add(new LeftPanel());
   Game.setBoard(5, leftPanel);
 
-  if (!gameEnd)
-    Game.activateBoard(0);
-  else
-    playGame();
+ // if (!gameEnd)
+   // Game.activateBoard(0);
+ // else
+  //  playGame();
 
 };
 
@@ -97,35 +99,32 @@ var playGame = function() {
   GameManager.reset();
 
   //Deactivate notify panels
-  Game.deactivateBoard(0);
   Game.deactivateBoard(1);
   Game.deactivateBoard(2);
+  Game.deactivateBoard(3);
   //Activate the game
-  Game.activateBoard(3);
   Game.activateBoard(4);
   Game.activateBoard(5);
 };
 
 var winGame = function() {
   //Deactivate the game
-  Game.deactivateBoard(3);
   Game.deactivateBoard(4);
   Game.deactivateBoard(5);
 
   //Activate victory panel
-  Game.activateBoard(1);
+  Game.activateBoard(2);
 
   gameEnd = true;
 };
 
 var loseGame = function() {
   //Deactivate the game
-  Game.deactivateBoard(3);
   Game.deactivateBoard(4);
   Game.deactivateBoard(5);
 
   //Activate defeat panel
-  Game.activateBoard(2);
+  Game.activateBoard(3);
 
   gameEnd = true;
 };
@@ -283,8 +282,8 @@ DeadZone.prototype.draw = function(ctx){
 
 //Class Spawner
 var Spawner = function(pos, nClients, freq){
-  this.nClients = nClients;
-  this.initClients = this.nClients;
+  this.nC = nClients;
+  this.initClients = this.nC;
   this.freq = freq;
   this.initFreq = this.freq;
   this.client = new Client(pos.x, pos.y);
@@ -298,10 +297,10 @@ Spawner.prototype.reset = function(){
 
 Spawner.prototype.step = function(dt){
   this.freq -= dt;
-  if(this.nClients > 0 && this.freq < 0){
+  if(this.nC > 0 && this.freq < 0){
     this.freq = this.initFreq;
     this.board.add(Object.create(this.client));
-    this.nClients--;
+    this.nC--;
   }
 }
 
@@ -352,6 +351,7 @@ var GameManager = new function(){
       winGame();
       console.log("VICTORY");
     }
+    console.log(this.totalClients);
   }
 }
 
